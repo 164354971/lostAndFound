@@ -1,0 +1,51 @@
+server:
+  port: 1234
+  address: 0.0.0.0
+
+spring:
+  datasource:
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      #username: lost_and_found
+      username: root
+      password: ty70432159
+      url: jdbc:mysql://localhost:3306/lost_and_found?serverTimezone=Asia/Shanghai
+
+mybatis-plus:
+  global-config:
+    db-config:
+      table-prefix:
+      id-type: auto
+  configuration:
+    #在映射实体或者属性时，将数据库中表名和字段名中的下划线去掉，按照驼峰命名法映射
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+mybatis:
+  #mapper配置文件
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: love.lingbao.entity
+  #驼峰命名映射
+  configuration:
+    map-underscore-to-camel-case: true
+
+# 异步线程配置
+
+async:
+  executor:
+    thread:
+      core_pool_size: 5             # 配置核心线程数
+      max_pool_size: 5       # 配置最大线程数
+      queue_capacity: 99999   # 配置队列大小
+      name:
+        prefix: async-service-    # 配置线程池中的线程的名称前缀
+
+logging:
+  leve:
+    love.lingbao.mapper=debug
+
+txsms:
+  AppId: 1400818305 #你的系统默认应用SDK AppID
+  AppKey: 6780714c3b3b5ce01ddcdd13645f9c20 #你的系统默认应用App Key
+  TemplateId: 1786561 #你的正文模板ID
+  signName: 玲宝的练习空间网  #你的签名内容

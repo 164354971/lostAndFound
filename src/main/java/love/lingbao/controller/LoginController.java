@@ -1,0 +1,170 @@
+package love.lingbao.controller;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.github.qcloudsms.SmsSingleSenderResult;
+import lombok.extern.slf4j.Slf4j;
+import love.lingbao.common.R;
+import love.lingbao.common.RandomCodeUtils;
+import love.lingbao.common.SendMsg;
+import love.lingbao.entity.User;
+import love.lingbao.entity.UserInCode;
+import love.lingbao.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.DigestUtils;
+import org.springframework.web.bind.annotation.*;
+import org.testng.annotations.Test;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import java.nio.charset.StandardCharsets;
+
+@Slf4j
+@RestController
+@RequestMapping("/login")
+public class LoginController {
+
+    @Autowired
+    private UserService userService;
+
+    @PostMapping
+    public R<User> login(HttpServletRequest request, @RequestBody User employee){//http对象用来将登录成功的用户存入session里
+
+        //1、根据页面提交的用户名username查询数据库
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getUsername,employee.getUsername());
+        User user = userService.getOne(queryWrapper);
+
+        //2、如果没有查询到则返回登录失败结果
+        if(user == null){
+            return R.error("用户名不存在");
+        }
+
+        //3、将页面提交的密码password进行md5加密处理
+        String password = employee.getPassword();
+        password = DigestUtils.md5DigestAsHex(password.getBytes());
+
+        //4、密码比对，如果不一致则返回登录失败结果
+        if(!user.getPassword().equals(password)){
+            return R.error("用户名或密码错误，请重试");
+        }
+
+        //5、登录成功，将用户id存入Session并返回登录成功结果
+        request.getSession().setAttribute("user",user.getId());
+        request.getSession().setMaxInactiveInterval(24 * 60 * 60);
+        return R.success(user, "登录成功！");
+    }
+
+    @GetMapping("/sendMsg")
+    public R<String> sendMsg(HttpServletRequest request, String phone) throws Exception {
+        //判断该注册用户的手机号是否存在
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getPhone, phone);
+        User user = userService.getOne(queryWrapper);
+        //手机号存在，返回
+        if(user != null){
+            return R.error("该手机号已有绑定账号，请更换手机号后再试");
+        }
+        //生成6位数验证码
+        String code = RandomCodeUtils.getSixValidationCode();
+        //短信格式插入字符串数组，第一个是验证码，第二个是时长（分钟）
+        String[] params = {code, "3"};
+        //发送短信，获取发送的结果
+        SmsSingleSenderResult result = SendMsg.sendMsgByTxPlatform(phone, params);
+        //结果的结果码为1016，表示手机号的格式输入有误，返回
+        if(result.result == 1016) return R.error("手机号格式输入有误！请重新输入");
+        //其他错误，抛异常
+        else if(result.result != 0){
+            throw new Exception("send phone validateCode is error" + result.errMsg);
+        }
+        //正确情况
+        else{
+            //存储该手机号的session,键为手机号，值为验证码，时长为3分钟
+            request.getSession().setAttribute(phone, code);
+            request.getSession().setMaxInactiveInterval(3 * 60);
+            System.out.println(request.getSession().getAttribute(phone));
+        }
+        return R.success("验证码已发送");
+    }
+
+    @GetMapping("/username")
+    public R<String> username(String username){
+        //1、根据页面提交的用户名username查询数据库
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getUsername, username);
+        User user = userService.getOne(queryWrapper);
+
+        //2、如果没有查询到则返回登录失败结果
+        if(user != null){
+            return R.error("用户名已存在！");
+        }
+        return R.success("用户名未注册，可以使用");
+    }
+
+    @PostMapping("/register")
+    public R<String> register(HttpServletRequest request, @RequestBody UserInCode userInCode){
+        //先对验证码比对
+        //如果不相等
+        if(!request.getSession().getAttribute(userInCode.getUsername()).equals(userInCode.getCode())){
+            return R.error("验证码输入错误！请重试");
+        }
+        //之后，对用户的密码进行md5加密
+        String password = userInCode.getPassword();
+        password = DigestUtils.md5DigestAsHex(password.getBytes(StandardCharsets.UTF_8));
+        userInCode.setPassword(password);
+        //存储新用户
+        userService.save(userInCode);
+
+        return R.success("用户" + userInCode.getUsername() + "注册成功！");
+    }
+
+    @GetMapping("/test01")
+    public void test01(HttpServletRequest request){
+        /*String phone = "15310467031";
+        //判断该注册用户的手机号是否存在
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getPhone, phone);
+        User user = userService.getOne(queryWrapper);
+        //手机号存在，返回
+        if(user != null){
+            return R.error("该手机号已有绑定账号，请更换手机号后再试");
+        }
+        //生成6位数验证码
+        String code = RandomCodeUtils.getSixValidationCode();
+        //短信格式插入字符串数组，第一个是验证码，第二个是时长（分钟）
+        String[] params = {code, "3"};
+        //发送短信，获取发送的结果
+        SmsSingleSenderResult result = SendMsg.sendMsgByTxPlatform(phone, params);
+        //结果的结果码为1016，表示手机号的格式输入有误，返回
+        if(result.result == 1016) return R.error("手机号格式输入有误！请重新输入");
+            //其他错误，抛异常
+        else if(result.result != 0){
+            throw new Exception("send phone validateCode is error" + result.errMsg);
+        }
+        //正确情况
+        else{
+            //存储该手机号的session,键为手机号，值为验证码，时长为3分钟
+            request.getSession().setAttribute(phone, code);
+            request.getSession().setMaxInactiveInterval(3 * 60);
+            System.out.println(request.getSession().getAttribute(phone));
+        }
+        return R.success("验证码已发送");*/
+        String phone = "15310467031";
+        String code = RandomCodeUtils.getSixValidationCode();
+        request.getSession().setAttribute(phone, code);
+        //30s
+        request.getSession().setMaxInactiveInterval(30);
+        System.out.println(request.getSession().getAttribute(phone));
+    }
+
+    @GetMapping("/test02")
+    public String test02(HttpServletRequest request){
+
+        return (String) request.getSession().getAttribute("15310467031");
+    }
+
+    @GetMapping("/test03")
+    public String test03(){
+        System.out.println("e10adc3949ba59abbe56e057f20f883e".length());
+        return DigestUtils.md5DigestAsHex("123456".getBytes(StandardCharsets.UTF_8));
+    }
+}
