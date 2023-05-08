@@ -1,7 +1,7 @@
-package love.lingbao.mapper;
+package love.lingbao.mapper.lose;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import love.lingbao.entity.LoseGoods;
+import love.lingbao.entity.lose.LoseGoods;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

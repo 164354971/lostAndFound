@@ -1,4 +1,4 @@
-package love.lingbao.entity;
+package love.lingbao.entity.lose;
 
 import lombok.Data;
 

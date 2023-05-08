@@ -1,9 +1,9 @@
-package love.lingbao.service.impl;
+package love.lingbao.service.lose.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import love.lingbao.entity.LoseGoods;
-import love.lingbao.mapper.LoseGoodsMapper;
-import love.lingbao.service.LoseGoodsService;
+import love.lingbao.entity.lose.LoseGoods;
+import love.lingbao.mapper.lose.LoseGoodsMapper;
+import love.lingbao.service.lose.LoseGoodsService;
 import org.springframework.stereotype.Service;
 
 @Service
