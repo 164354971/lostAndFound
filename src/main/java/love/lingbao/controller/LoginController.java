@@ -7,17 +7,17 @@ import love.lingbao.common.R;
 import love.lingbao.common.RandomCodeUtils;
 import love.lingbao.common.SendMsg;
 import love.lingbao.entity.User;
-import love.lingbao.entity.UserInCode;
+import love.lingbao.dto.UserDto;
 import love.lingbao.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
-import org.testng.annotations.Test;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+
+import java.util.Objects;
 
 @Slf4j
 @RestController
@@ -66,9 +66,12 @@ public class LoginController {
      * @param phone 手机号码
      * @return
      */
-    @GetMapping("/sendMsg")
-    public R<String> sendMsg(HttpServletRequest request, String phone) throws Exception {
-        log.info("/login/sendMsg get -> sendMsg: phone = {}; 发送短信验证码", phone);
+    @PostMapping("/sendMsg")
+    public R<String> sendMsg(HttpServletRequest request,@RequestBody String phone) throws Exception {
+        if(phone.contains("=")){
+            phone = phone.substring(0, phone.length() - 1);
+        }
+        log.info("/login/sendMsg post -> sendMsg: phone = {}; 发送短信验证码", phone);
         //判断该注册用户的手机号是否存在
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getPhone, phone);
@@ -125,7 +128,7 @@ public class LoginController {
      * @return
      */
     @PostMapping("/register")
-    public R<String> register(HttpServletRequest request, @RequestBody UserInCode userInCode){
+    public R<String> register(HttpServletRequest request, @RequestBody UserDto userInCode){
         log.info("/login/register post -> register: userInCode = {}; 用户注册", userInCode.toString());
         //先对验证码比对
         //如果不相等

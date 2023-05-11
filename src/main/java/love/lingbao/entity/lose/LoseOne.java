@@ -7,7 +7,7 @@ import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class LosePage extends LoseGoods{
+public class LoseOne extends LoseGoods{
     private List<LoseImage> loseImages;
     private List<LoseTag> loseTags;
     private List<LoseClassify> loseClassifies;

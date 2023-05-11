@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import love.lingbao.common.R;
 import love.lingbao.entity.lose.LoseGoods;
 import love.lingbao.entity.lose.LoseImage;
-import love.lingbao.entity.lose.LosePage;
+import love.lingbao.entity.lose.LoseOne;
 import love.lingbao.entity.lose.LoseTag;
 import love.lingbao.service.lose.LoseClassifyService;
 import love.lingbao.service.lose.LoseGoodsService;
@@ -23,10 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -43,24 +40,6 @@ public class LoseController {
     private LoseClassifyService loseClassifyService;
     @Autowired
     private UserService userService;
-
-    /**
-     * 失物图片上传到本地
-     * @param file 图片文件
-     * @return
-     */
-    @PostMapping ("/uploadImage")
-    public String uploadImage(HttpServletRequest request, MultipartFile file) {
-        log.info("/lose/uploadImage post -> uploadImage: file = {}; 将图片保存在本地，并返回存储路径", file);
-        String path = Objects.requireNonNull(Thread.currentThread().getContextClassLoader().getResource("static/images")).getPath();//本地资源路径
-        try {
-            file.transferTo(new File(path, Objects.requireNonNull(file.getOriginalFilename())));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        String uid = (String) request.getSession().getAttribute("user");
-        return "/images/" + uid + "/" + file.getOriginalFilename();//保存成功后返回路径
-    }
 
     /**
      * 添加失物信息
@@ -110,7 +89,7 @@ public class LoseController {
      * @return
      */
     @GetMapping
-    public R<List<LosePage>> find(int page, int pageSize, String name){
+    public R<List<LoseOne>> find(int page, int pageSize, String name){
         log.info("/lose get -> find: page = {}, pageSize = {}, name = {}; 失物分页查询", page, pageSize, name);
         Page<LoseGoods> pageInfo = new Page<>(page, pageSize);
         //1.获取失物信息体的分页
@@ -123,10 +102,10 @@ public class LoseController {
 
         //2.将信息体其他的附带条件一起添加进来，如图片、标签等
         List<LoseGoods> loseGoods = pageInfo.getRecords();
-        List<LosePage> losePages = new ArrayList<>();
+        List<LoseOne> losePages = new ArrayList<>();
         for (LoseGoods loseGood : loseGoods) {
             //2.1 new一个losePage，由父类loseGoods转换
-            LosePage losePage = (LosePage) loseGood;
+            LoseOne losePage = (LoseOne) loseGood;
             //2.2 获取loseGood 的id
             Integer loseGoodsId = loseGood.getId();
             //2.2.1 获取该id对应的图片信息
@@ -148,8 +127,32 @@ public class LoseController {
         return R.success(losePages);
     }
 
-    /*@DeleteMapping
-    public R<String> remove(){
+    /**
+     * 失物信息删除
+     * @param loseGoods 失物信息体
+     * @return
+     */
+    @DeleteMapping
+    public R<String> remove(HttpServletRequest request, @RequestBody LoseGoods loseGoods){
+        log.info("/lose delete -> remove: loseGoods = {}; 失物信息删除", loseGoods);
+        //如果删除的失物信息对应的用户ID与当前登录用户的ID不同，抛异常
+        if(request.getSession().getAttribute("user") != loseGoods.getUid()){
+            throw new RuntimeException("用户权限异常");
+        }
+        //1.匹配成功后开始删除，首先删除附表里的对应数据
+        //1.1 获得失物信息体id
+        Integer loseGoodsId = loseGoods.getId();
+        //1.1.1 获取失物信息体对应的标签们
+        LambdaQueryWrapper<LoseTag> loseTagLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        loseTagLambdaQueryWrapper.eq(LoseTag::getLoseGoodsId, loseGoodsId);
+        loseTagService.remove(loseTagLambdaQueryWrapper);
+        //1.1.2 获取失物信息体对应的图片们
+        LambdaQueryWrapper<LoseImage> loseImageLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        loseImageLambdaQueryWrapper.eq(LoseImage::getLoseGoodsId, loseGoodsId);
+        loseImageService.remove(loseImageLambdaQueryWrapper);
 
-    }*/
+        //1.2 删除失物信息体本身
+        loseGoodsService.removeById(loseGoodsId);
+        return R.success("失物 " + loseGoods.getGoodsName() + " 删除成功");
+    }
 }
