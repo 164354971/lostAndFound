@@ -1,6 +1,7 @@
 package love.lingbao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import love.lingbao.dto.UserDto;
 import love.lingbao.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 

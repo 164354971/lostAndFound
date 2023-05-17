@@ -49,3 +49,7 @@ txsms:
   AppKey: 6780714c3b3b5ce01ddcdd13645f9c20 #你的系统默认应用App Key
   TemplateId: 1786561 #你的正文模板ID
   signName: 玲宝的练习空间网  #你的签名内容
+
+lingbao:
+  address-dev: http://localhost:8080
+  address: https://lingbao.love

@@ -1,8 +1,12 @@
 package love.lingbao.entity.lose;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class LoseClassify {
     private Integer id; //int auto_increment comment '主键id'
     private Integer loseGoodsId; //int not null comment '发布失物信息表的id（发布失物信息表的外键）',

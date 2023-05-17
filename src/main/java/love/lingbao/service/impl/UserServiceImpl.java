@@ -1,6 +1,7 @@
 package love.lingbao.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import love.lingbao.dto.UserDto;
 import love.lingbao.mapper.UserMapper;
 import love.lingbao.entity.User;
 import love.lingbao.service.UserService;
@@ -17,6 +18,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public List<User> findAll() {
         return userMapper.findAll();
+    }
+
+    @Override
+    public void saveUserDto(UserDto userDto) {
+        User user = new User();
+        user.setId(userDto.getId());
+        user.setUsername(userDto.getUsername());
+        user.setPassword(userDto.getPassword());
+        user.setName(userDto.getName());
+        user.setGender(userDto.getGender());
+        user.setPhone(userDto.getPhone());
+        user.setCreateTime(userDto.getCreateTime());
+        user.setUpdateTime(userDto.getUpdateTime());
+        userMapper.insert(user);
     }
 
 }

@@ -1,4 +1,4 @@
-package love.lingbao.entity.lose;
+package love.lingbao.entity.pickUp;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoseGoods {
+public class PickUpGoods {
     private Integer id;                     //int auto_increment comment '主键id'
     private Integer uid;                    //int         not null comment '发布者ID；用户表丢失物品发布的id（用户表的外键）',
     private String goodsName;              //varchar(20) not null comment '丢失物品的名称，1-20位的非空字段',
@@ -19,8 +19,5 @@ public class LoseGoods {
     private LocalDateTime endTime;         //datetime    not null comment '丢失物品的大致结束时间',
 
     private LocalDateTime createTime;   //创建时间
-
     private LocalDateTime updateTime;   //资料更新时间
-    /*constraint fk_lose_goods_uid
-    foreign key (uid) references user (id)*/
 }
