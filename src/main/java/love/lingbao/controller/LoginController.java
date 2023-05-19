@@ -30,9 +30,6 @@ import java.util.Objects;
 @ResponseBody
 public class LoginController {
 
-    @Value("${lingbao.address-dev}")
-    private String address;
-
     @Autowired
     private HttpSession httpSession;
 
@@ -46,7 +43,7 @@ public class LoginController {
      */
     @PostMapping
     @RequestMapping
-    public R<User> login(HttpServletRequest request, HttpServletResponse response, @RequestBody User user){//http对象用来将登录成功的用户存入session里
+    public R<User> login(@RequestBody User user){//http对象用来将登录成功的用户存入session里
         //response.setHeader("Access-Control-Allow-Origin", address);
         log.info("/login post -> login: user = {}; 用户登录", user.toString());
         //1、根据页面提交的用户名username查询数据库
@@ -81,9 +78,9 @@ public class LoginController {
      * @return
      */
     @PostMapping("/sendMsg")
-    public R<String> sendMsg(HttpServletRequest request, HttpServletResponse response, @RequestBody String phone) throws Exception {
+    public R<String> sendMsg(@RequestBody String phone) throws Exception {
         //response.setHeader("Access-Control-Allow-Origin", address);
-        if(phone.contains("=")){
+        if(phone.length() > 0 && phone.charAt(phone.length() - 1) == '='){
             phone = phone.substring(0, phone.length() - 1);
         }
         log.info("/login/sendMsg post -> sendMsg: phone = {}; 发送短信验证码", phone);
@@ -123,9 +120,9 @@ public class LoginController {
      * @return
      */
     @PostMapping("/username")
-    public R<String> username(HttpServletRequest request, HttpServletResponse response, @RequestBody String username){
+    public R<String> username(@RequestBody String username){
         //response.setHeader("Access-Control-Allow-Origin", address);
-        if(username.contains("=")){
+        if(username.length() > 0 && username.charAt(username.length() - 1) == '='){
             username = username.substring(0, username.length() - 1);
         }
         log.info("/login/username post -> username: username = {}; 查询用户名是否存在", username);
@@ -146,7 +143,7 @@ public class LoginController {
      * @return
      */
     @GetMapping("/code")
-    public R<String> code(HttpServletRequest request, HttpServletResponse response){
+    public R<String> code(){
         //response.setHeader("Access-Control-Allow-Origin", address);
         log.info("/login/code get -> ; 生成登录验证码");
         //生成4位数验证码
@@ -160,7 +157,7 @@ public class LoginController {
      * @return
      */
     @PostMapping("/register")
-    public R<String> register(HttpServletRequest request, HttpServletResponse response, @RequestBody UserDto userDto){
+    public R<String> register(@RequestBody UserDto userDto){
         //response.setHeader("Access-Control-Allow-Origin", address);
         log.info("/login/register post -> register: userDto = {}; 用户注册", userDto.toString());
         //先对验证码比对
@@ -214,9 +211,9 @@ public class LoginController {
      * @return
      */
     @PostMapping("/sendMsg1")
-    public R<String> sendMsg1(HttpServletRequest request, HttpServletResponse response, @RequestBody String phone) throws Exception {
+    public R<String> sendMsg1(@RequestBody String phone) throws Exception {
         //response.setHeader("Access-Control-Allow-Origin", address);
-        if(phone.contains("=")){
+        if(phone.length() > 0 && phone.charAt(phone.length() - 1) == '='){
             phone = phone.substring(0, phone.length() - 1);
         }
         log.info("/login/sendMsg1 post -> sendMsg: phone = {}; 测试发送短信验证码", phone);
@@ -244,7 +241,7 @@ public class LoginController {
      * @return
      */
     @GetMapping("/isUserLogin")
-    public R<User> isUserLogin(HttpServletRequest request, HttpServletResponse response){
+    public R<User> isUserLogin(){
         //response.setHeader("Access-Control-Allow-Origin", address);
         log.info("/login/isUserLogin get -> ; 查询用户是否登录");
         User user = userService.getById((Integer) httpSession.getAttribute("user"));
@@ -256,7 +253,7 @@ public class LoginController {
     }
 
     @GetMapping("/test01")
-    public void test01(HttpServletRequest request){
+    public void test01(){
         String phone = "15310467031";
         String code = RandomCodeUtils.getSixValidationCode();
         httpSession.setAttribute(phone, code);
@@ -266,8 +263,7 @@ public class LoginController {
     }
 
     @GetMapping("/test02")
-    public String test02(HttpServletRequest request){
-
+    public String test02(){
         return (String) httpSession.getAttribute("15310467031");
     }
 

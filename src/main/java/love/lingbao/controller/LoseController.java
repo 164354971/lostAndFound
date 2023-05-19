@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import love.lingbao.common.R;
 import love.lingbao.dto.LosePage;
+import love.lingbao.entity.User;
 import love.lingbao.entity.lose.LoseGoods;
 import love.lingbao.entity.lose.LoseImage;
 import love.lingbao.vo.lose.LoseOneVO;
@@ -33,9 +34,6 @@ import java.util.*;
 @ResponseBody
 public class LoseController {
 
-    @Value("${lingbao.address-dev}")
-    private String address;
-
     @Autowired
     private HttpSession httpSession;
 
@@ -58,7 +56,7 @@ public class LoseController {
      * @return
      */
     @PostMapping("/add")
-    public R<String> add(HttpServletRequest request, HttpServletResponse response, @MultiRequestBody LoseGoods loseGoods, @MultiRequestBody String[] urls, @MultiRequestBody String[] tags){
+    public R<String> add(@MultiRequestBody LoseGoods loseGoods, @MultiRequestBody String[] urls, @MultiRequestBody String[] tags){
         //response.setHeader("Access-Control-Allow-Origin", address);
         log.info("/lose post -> add: loseGoods = {}, urls = {}, tags = {}; 添加失物信息", loseGoods.toString(), Arrays.toString(urls), Arrays.toString(tags));
         if(loseGoods.getGoodsName().length() > 20)
@@ -97,7 +95,7 @@ public class LoseController {
      * @return
      */
     @PostMapping("/page")
-    public R<Page<LoseOneVO>> page(HttpServletRequest request, HttpServletResponse response, @RequestBody LosePage losePage){
+    public R<Page<LoseOneVO>> page(@RequestBody LosePage losePage){
         //response.setHeader("Access-Control-Allow-Origin", address);
         log.info("/lose post -> page: losePage = {}; 失物分页查询", losePage);
         log.info(String.valueOf((Integer) httpSession.getAttribute("user")));
@@ -130,6 +128,10 @@ public class LoseController {
             loseTagLambdaQueryWrapper.eq(LoseTag::getLoseGoodsId, loseGoodsId);
             //2.2.4 存进loseOne里
             loseOne.setLoseTags(loseTagService.list(loseTagLambdaQueryWrapper));
+            //2.2.5 将用户信息加入
+            User user = userService.getById(loseOne.getLoseGoods().getUid());
+            loseOne.setUser(user);
+
 
             //2.3 losePage放进loseOneVOlist里
             loseOneVOlist.add(loseOne);
@@ -145,10 +147,10 @@ public class LoseController {
      * @return
      */
     @DeleteMapping
-    public R<String> remove(HttpServletRequest request, @RequestBody LoseGoods loseGoods){
+    public R<String> remove(@RequestBody LoseGoods loseGoods){
         log.info("/lose delete -> remove: loseGoods = {}; 失物信息删除", loseGoods);
         //如果删除的失物信息对应的用户ID与当前登录用户的ID不同，抛异常
-        if(request.getSession().getAttribute("user") != loseGoods.getUid()){
+        if(httpSession.getAttribute("user") != loseGoods.getUid()){
             throw new RuntimeException("用户权限异常");
         }
         //1.匹配成功后开始删除，首先删除附表里的对应数据

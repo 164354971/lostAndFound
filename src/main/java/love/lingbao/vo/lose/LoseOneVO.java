@@ -3,6 +3,7 @@ package love.lingbao.vo.lose;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import love.lingbao.entity.User;
 import love.lingbao.entity.lose.LoseClassify;
 import love.lingbao.entity.lose.LoseGoods;
 import love.lingbao.entity.lose.LoseImage;
@@ -15,6 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class LoseOneVO {
     private Integer id;
+    private User user;
     private LoseGoods loseGoods;
     private List<LoseImage> loseImages;
     private List<LoseTag> loseTags;

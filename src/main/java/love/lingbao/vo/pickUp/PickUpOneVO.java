@@ -3,6 +3,7 @@ package love.lingbao.vo.pickUp;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import love.lingbao.entity.User;
 import love.lingbao.entity.pickUp.PickUpClassify;
 import love.lingbao.entity.pickUp.PickUpGoods;
 import love.lingbao.entity.pickUp.PickUpImage;
@@ -16,6 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PickUpOneVO {
     private Integer id;
+    private User user;
     private PickUpGoods pickUpGoods;
     private List<PickUpImage> pickUpImages;
     private List<PickUpTag> pickUpTags;

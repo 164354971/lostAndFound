@@ -6,9 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import love.lingbao.common.R;
 import love.lingbao.dto.LosePage;
 import love.lingbao.dto.PickUpPage;
+import love.lingbao.entity.User;
 import love.lingbao.entity.pickUp.PickUpGoods;
 import love.lingbao.entity.pickUp.PickUpImage;
 import love.lingbao.entity.pickUp.PickUpTag;
+import love.lingbao.service.UserService;
 import love.lingbao.vo.pickUp.PickUpOneVO;
 import love.lingbao.service.pickUp.PickUpClassifyService;
 import love.lingbao.service.pickUp.PickUpGoodsService;
@@ -31,8 +33,6 @@ import java.util.List;
 @CrossOrigin
 @ResponseBody
 public class PickUpController {
-    @Value("${lingbao.address-dev}")
-    private String address;
 
     @Autowired
     private HttpSession httpSession;
@@ -46,13 +46,16 @@ public class PickUpController {
     @Autowired
     private PickUpClassifyService pickUpClassifyService;
 
+    @Autowired
+    private UserService userService;
+
     /**
      * 拾物信息分页查询
      * @param pickUpPage 页数，页大小，查找字符串
      * @return
      */
     @PostMapping("/page")
-    public R<Page<PickUpOneVO>> page(HttpServletRequest request, HttpServletResponse response, @RequestBody PickUpPage pickUpPage){
+    public R<Page<PickUpOneVO>> page(@RequestBody PickUpPage pickUpPage){
         //response.setHeader("Access-Control-Allow-Origin", address);
         log.info("/pickUp post -> page: pickUpPage = {};拾物分页查询", pickUpPage);
         log.info(String.valueOf((Integer) httpSession.getAttribute("user")));
@@ -85,6 +88,9 @@ public class PickUpController {
             pickUpTagLambdaQueryWrapper.eq(PickUpTag::getPickUpGoodsId, pickUpGoodsId);
             //2.2.4 存进pickUpOne里
             pickUpOne.setPickUpTags(pickUpTagService.list(pickUpTagLambdaQueryWrapper));
+            //2.2.5 将用户信息加入
+            User user = userService.getById(pickUpOne.getPickUpGoods().getUid());
+            pickUpOne.setUser(user);
 
             //2.3 pickUpOne放进pickUpOneVOList里
             pickUpOneVOList.add(pickUpOne);
